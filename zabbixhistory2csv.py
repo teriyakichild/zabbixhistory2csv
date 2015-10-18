@@ -43,8 +43,9 @@ def build_parsers():
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter,
                                      description='zabbixhistory2csv')
     parser.add_argument("-V", "--verify",
-                        default='true',
-                        help="Verify SSL (True, False, or Path to CACert)")
+                        default='True',
+                        choices=['True', 'False'],
+                        help="Verify SSL (True, False)")
     parser.add_argument("-H", "--host",
                         dest='host',
                         required=True,
