@@ -9,17 +9,25 @@ from pyzabbix import ZabbixAPI
 
 def get_zapi(host, user, password, verify):
     zapi = ZabbixAPI(host)
+    # Whether or not to verify the SSL certificate
     zapi.session.verify = verify
     zapi.login(user, password)
     return zapi
 
 
 def get_history(zapi, itemid, time_from, time_till):
+    # The zabbix api call for history.get requires that we know the item's data type.
+    # We can get this through a call to the zabbix api since we have the itemid.
     items = zapi.item.get(itemids=itemid, output=['value_type'])
+
+    # The only successful outcome would be a list with one item. If we get more or less,
+    # we should assume that the item doesn't exist.
     if len(items) == 1:
         value_type = items[0]['value_type']
     else:
         raise Exception('Item not foudn')
+
+    # Make call to zabbix API for history
     ret = zapi.history.get(itemids=itemid,
                             time_from=time_from,
                             time_till=time_till,
@@ -30,9 +38,13 @@ def get_history(zapi, itemid, time_from, time_till):
     return ret
 
 def write_csv(objects, output_file, ):
+    # Open the output_file and instanstiate the csv.writer object
     f = csv.writer(open(output_file, "wb+"))
-    f.writerow(objects[9].keys())
+    
+    # Write the top line of the output_file which descibes the columns
+    f.writerow(objects[0].keys())
 
+    # For each object, write a row to the csv file.
     for o in objects:
         row = []
         for key in o.keys():
@@ -68,12 +80,21 @@ def build_parsers():
     return parser
 
 if __name__ == '__main__':
+    # Load argparse and parse arguments
     parser = build_parsers()
     args = parser.parse_args(sys.argv[1:])
+
+    # Generate parameters for get_zapi function
     seconds_ago = int(args.minutes_ago) * 60
     now = int(time.time())
     password = getpass.getpass()
+
+    # Generate the zapi object so we can pass it to the get_history function
     zapi = get_zapi(args.host, args.user, password, eval(args.verify))
+
+    # generate the list of history objects returned from zabbix api.
     results = get_history(zapi, args.itemid, (now - seconds_ago), now)
-    print('Writing {0} minutes worth of history to {1}'.format(args.minutes_ago, args.output_file))
+
+    # Write the results to file in csv format
     write_csv(results, args.output_file)
+    print('Writing {0} minutes worth of history to {1}'.format(args.minutes_ago, args.output_file))
