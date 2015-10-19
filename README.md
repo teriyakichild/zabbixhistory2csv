@@ -2,6 +2,7 @@
 
 This tool is used to pull history from the zabbixapi by itemid and output to csv file.
 
+## Usage:
 ```
 usage: zabbixhistory2csv.py [-h] [-V {True,False}] -H HOST [-u USER]
                             [-m MINUTES_AGO] [-o OUTPUT_FILE] -i ITEMID
@@ -25,3 +26,6 @@ optional arguments:
                         The zabbix item that we will use in our history.get
                         api call. (default: None)
 ```
+
+## Installation of dependencies:
+pip install -r requirements.txt
