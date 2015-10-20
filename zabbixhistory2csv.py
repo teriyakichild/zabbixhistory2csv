@@ -19,22 +19,41 @@ def get_history(zapi, itemid, time_from, time_till):
     # The zabbix api call for history.get requires that we know the item's data type.
     # We can get this through a call to the zabbix api since we have the itemid.
     items = zapi.item.get(itemids=itemid, output=['value_type'])
+    ret = []
 
     # The only successful outcome would be a list with one item. If we get more or less,
     # we should assume that the item doesn't exist.
     if len(items) == 1:
         value_type = items[0]['value_type']
     else:
-        raise Exception('Item not foudn')
+        raise Exception('Item not found')
 
+    # max minutes we'll look behind (to account for zabbix hitting its memory limit)
+    max_mins = 120
+    max_secs = max_mins * 60
+
+    # time_till = now
+    # time_from = start time
     # Make call to zabbix API for history
-    ret = zapi.history.get(itemids=itemid,
-                            time_from=time_from,
-                            time_till=time_till,
-                            history=value_type,
-                            sortfield='clock',
-                            output='extend'
-                        )
+    while time_till > time_from:
+        if time_till - time_from > max_secs:
+            ret += zapi.history.get(itemids=itemid,
+                                    time_from=time_from,
+                                    time_till=time_from + max_secs,
+                                    history=value_type,
+                                    sortfield='clock',
+                                    output='extend'
+                                )
+            time_from = time_from + max_secs 
+        else:
+            ret += zapi.history.get(itemids=itemid,
+                                    time_from=time_from,
+                                    time_till=time_till,
+                                    history=value_type,
+                                    sortfield='clock',
+                                    output='extend'
+                                )
+            break
     return ret
 
 def write_csv(objects, output_file, ):
