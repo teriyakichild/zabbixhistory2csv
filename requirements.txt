@@ -1,1 +1,1 @@
-pyzabbix
+pyzabbix>=0.7
