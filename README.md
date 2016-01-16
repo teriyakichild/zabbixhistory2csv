@@ -1,6 +1,8 @@
 # Zabbixhistory2csv
 
-This tool is used to pull history from the zabbixapi by itemid and output to csv file.
+This tool is used to pull history from the zabbixapi by itemid and output to csv file.  
+  
+Tested on python2.7 with zabbix2.2.  
 
 ## Usage:
 ```
